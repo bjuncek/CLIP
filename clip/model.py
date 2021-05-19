@@ -249,10 +249,11 @@ class CLIP(nn.Module):
                  vocab_size: int,
                  transformer_width: int,
                  transformer_heads: int,
-                 transformer_layers: int
+                 transformer_layers: int,
+                 output_seq: bool = False,
                  ):
         super().__init__()
-
+        self.output_seq = output_seq
         self.context_length = context_length
 
         if isinstance(vision_layers, (tuple, list)):
@@ -346,6 +347,9 @@ class CLIP(nn.Module):
         x = self.ln_final(x).type(self.dtype)
 
         # x.shape = [batch_size, n_ctx, transformer.width]
+        # BRUNO MOD: output sequence
+        if self.output_seq:
+            return x @ self.text_projection
         # take features from the eot embedding (eot_token is the highest number in each sequence)
         x = x[torch.arange(x.shape[0]), text.argmax(dim=-1)] @ self.text_projection
 
@@ -392,7 +396,7 @@ def convert_weights(model: nn.Module):
     model.apply(_convert_weights_to_fp16)
 
 
-def build_model(state_dict: dict):
+def build_model(state_dict: dict, output_seq:bool = False):
     vit = "visual.proj" in state_dict
 
     if vit:
@@ -420,7 +424,7 @@ def build_model(state_dict: dict):
     model = CLIP(
         embed_dim,
         image_resolution, vision_layers, vision_width, vision_patch_size,
-        context_length, vocab_size, transformer_width, transformer_heads, transformer_layers
+        context_length, vocab_size, transformer_width, transformer_heads, transformer_layers, output_seq=output_seq
     )
 
     for key in ["input_resolution", "context_length", "vocab_size"]:
