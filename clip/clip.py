@@ -91,7 +91,7 @@ def available_models() -> List[str]:
     return list(_MODELS.keys())
 
 
-def load(name: str, device: Union[str, torch.device] = "cuda" if torch.cuda.is_available() else "cpu", jit=True, download_root=None, output_seq=False):
+def load(name: str, device: Union[str, torch.device] = "cuda" if torch.cuda.is_available() else "cpu", jit=True, download_root: str = None, output_seq: bool = False):
     """Load a CLIP model
 
     Parameters
@@ -107,6 +107,9 @@ def load(name: str, device: Union[str, torch.device] = "cuda" if torch.cuda.is_a
 
     download_root: str
         path to download the model files; by default, it uses "~/.cache/clip"
+
+    output_seq: bool
+        CLIP should output entire text sequence as opposed to EOS token
 
     Returns
     -------
